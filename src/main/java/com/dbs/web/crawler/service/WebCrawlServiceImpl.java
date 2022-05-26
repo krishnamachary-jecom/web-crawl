@@ -91,6 +91,7 @@ public class WebCrawlServiceImpl implements WebCrawlService {
               webCrawlRepository.save(
                   WebCrawlDetails.builder()
                       // .id(UUID.randomUUID().toString())
+                      .url(url)
                       .title(doc.title())
                       .keyword(Arrays.asList(StringUtils.split(keywords, ",")))
                       .description(description)

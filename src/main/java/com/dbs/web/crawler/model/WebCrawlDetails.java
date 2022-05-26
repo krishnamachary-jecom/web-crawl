@@ -17,6 +17,8 @@ import java.util.List;
 public class WebCrawlDetails {
   @Id @Indexed @EqualsAndHashCode.Include private String id;
 
+  @Indexed private String url;
+
   @Indexed private String title;
 
   @Indexed private List<String> keyword;
