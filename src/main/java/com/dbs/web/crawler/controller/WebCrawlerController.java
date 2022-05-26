@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,10 +31,9 @@ public class WebCrawlerController {
    * @param crawl holds list of urls to crawl
    * @return list of urls crawled
    */
-
   @ResponseStatus(HttpStatus.OK)
   @PutMapping
-  public ApiResponse<List<String>> webcrawlURLs(@RequestBody Crawl crawl) {
+  public ApiResponse<List<String>> webcrawlURLs(@Validated @RequestBody Crawl crawl) {
     List<String> crawledUrls = webCrawlService.webCrawl(crawl.getWebUrls());
     return ApiUtil.createSuccessResponse("Web crawl done successfully", crawledUrls);
   }

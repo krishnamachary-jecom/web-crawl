@@ -83,7 +83,6 @@ public class WebCrawlServiceImpl implements WebCrawlService {
                     }
                   }
                   Elements links = doc.select("a[href]");
-                  SolrDocument solrDocument = new SolrDocument();
                   List<WebCrawlDetails> linkedUrls =
                       links.stream()
                           .distinct()

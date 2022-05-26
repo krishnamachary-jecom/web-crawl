@@ -2,6 +2,7 @@ package com.dbs.web.crawler.vo;
 
 import lombok.*;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @Builder(toBuilder = true)
@@ -11,5 +12,6 @@ import java.util.List;
 @Getter
 public class Crawl {
 
-    List<String> webUrls;
+  @NotEmpty(message = "URL must not be empty")
+  List<String> webUrls;
 }
