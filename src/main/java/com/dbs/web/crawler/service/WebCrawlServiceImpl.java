@@ -24,10 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.net.ssl.HttpsURLConnection;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,55 +47,73 @@ public class WebCrawlServiceImpl implements WebCrawlService {
         certificates.values().stream().flatMap(List::stream).collect(Collectors.toList());
     SSLFactory sslFactory = SSLFactory.builder().withTrustMaterial(certs).build();
     HttpsURLConnection.setDefaultSSLSocketFactory(sslFactory.getSslSocketFactory());
-    webUrls.stream()
-        .peek(
-            url -> {
-              if (log.isInfoEnabled()) {
-                log.info("Crawling the URL: {}", url);
-              }
-              Document doc =
-                  Try.of(() -> Jsoup.connect(url).get())
-                      .getOrElseThrow(
-                          e ->
-                              new ResponseStatusException(
-                                  HttpStatus.BAD_REQUEST, String.format("Invalid Url %s", url)));
-              Optional<Element> keywordElem =
-                  doc.select("meta[name=keywords]").stream()
-                      .filter(element -> ObjectUtils.isNotEmpty(element))
-                      .findFirst();
-              String keywords = "";
-              if (keywordElem.isPresent()) {
-                if (log.isInfoEnabled()) {
-                  log.info("Meta keyword : {}", keywords);
-                }
-                keywords = keywordElem.get().attr("content");
-              }
+    List<WebCrawlDetails> finalCrawlDetails =
+        webUrls.stream()
+            .map(
+                url -> {
+                  if (log.isInfoEnabled()) {
+                    log.info("Crawling the URL: {}", url);
+                  }
+                  String parentId = UUID.randomUUID().toString();
+                  Document doc =
+                      Try.of(() -> Jsoup.connect(url).get())
+                          .getOrElseThrow(
+                              e ->
+                                  new ResponseStatusException(
+                                      HttpStatus.BAD_REQUEST,
+                                      String.format("Invalid Url %s", url)));
+                  Optional<Element> keywordElem =
+                      doc.select("meta[name=keywords]").stream()
+                          .filter(element -> ObjectUtils.isNotEmpty(element))
+                          .findFirst();
+                  String keywords = "";
+                  if (keywordElem.isPresent()) {
+                    if (log.isInfoEnabled()) {
+                      log.info("Meta keyword : {}", keywords);
+                    }
+                    keywords = keywordElem.get().attr("content");
+                  }
 
-              String description = "";
-              Elements descElem = doc.select("meta[name=description]");
-              if (CollectionUtils.isNotEmpty(descElem)) {
-                description = descElem.get(0).attr("content");
-                if (log.isInfoEnabled()) {
-                  log.info("Meta description: {}", description);
-                }
-              }
-              Elements links = doc.select("a[href]");
-              SolrDocument solrDocument = new SolrDocument();
-              links.stream()
-                  .distinct()
-                  .forEach(link -> solrDocument.setField(link.attr("href"), link.text()));
+                  String description = "";
+                  Elements descElem = doc.select("meta[name=description]");
+                  if (CollectionUtils.isNotEmpty(descElem)) {
+                    description = descElem.get(0).attr("content");
+                    if (log.isInfoEnabled()) {
+                      log.info("Meta description: {}", description);
+                    }
+                  }
+                  Elements links = doc.select("a[href]");
+                  SolrDocument solrDocument = new SolrDocument();
+                  List<WebCrawlDetails> linkedUrls =
+                      links.stream()
+                          .distinct()
+                          .map(
+                              link ->
+                                  WebCrawlDetails.builder()
+                                      .id(UUID.randomUUID().toString())
+                                      .url(link.attr("href"))
+                                      .keyword(Collections.singletonList(link.text()))
+                                      .parentId(parentId)
+                                      .build())
+                          .collect(Collectors.toList());
 
-              webCrawlRepository.save(
-                  WebCrawlDetails.builder()
-                      // .id(UUID.randomUUID().toString())
-                      .url(url)
-                      .title(doc.title())
-                      .keyword(Arrays.asList(StringUtils.split(keywords, ",")))
-                      .description(description)
-                      .linkedUrls(solrDocument.toString())
-                      .build());
-            })
-        .collect(Collectors.toList());
+                  linkedUrls.add(
+                      WebCrawlDetails.builder()
+                          .id(parentId)
+                          .url(url)
+                          .title(doc.title())
+                          .keyword(Arrays.asList(StringUtils.split(keywords, ",")))
+                          .description(description)
+                          .linkedUrls(
+                              linkedUrls.stream()
+                                  .map(webCrawlDetail -> webCrawlDetail.getId())
+                                  .collect(Collectors.toList()))
+                          .build());
+                  return linkedUrls;
+                })
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    webCrawlRepository.saveAll(finalCrawlDetails);
     return webUrls;
   }
 

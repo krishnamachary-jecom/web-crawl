@@ -25,5 +25,7 @@ public class WebCrawlDetails {
 
   @Indexed private String description;
 
-  @Indexed private String linkedUrls;
+  @Indexed private List<String> linkedUrls;
+
+  @Indexed private String parentId;
 }

@@ -8,6 +8,6 @@ import org.springframework.data.solr.repository.SolrCrudRepository;
 
 public interface WebCrawlRepository extends SolrCrudRepository<WebCrawlDetails, String> {
 
-    @Query("title:*?0* OR keyword:*?0* OR description:*?0* OR linkedUrls:*?0*")
+    @Query("url:*?0* OR title:*?0* OR keyword:*?0* OR description:*?0*")
     public Page<WebCrawlDetails> findByCustomQuery(String searchTerm, Pageable pageable);
 }
