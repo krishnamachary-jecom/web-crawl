@@ -1,0 +1,9 @@
+spring:
+  data:
+    solr:
+      host: http://localhost:8983/solr
+
+dbs:
+  pagination:
+    max-page-size: 500
+    default-page-size: 100
