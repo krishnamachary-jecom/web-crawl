@@ -2,6 +2,7 @@ package com.dbs.web.crawler.service;
 
 import com.dbs.web.crawler.model.WebCrawlDetails;
 import com.dbs.web.crawler.repository.WebCrawlRepository;
+import com.dbs.web.crawler.vo.SSLResolver;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,17 +37,13 @@ public class WebCrawlServiceImpl implements WebCrawlService {
 
   /**
    * Method crawl from world wide web and associated internal and external urls
-   *
+   * SSLResolver to be provided the url path to load urls
    * @param webUrls list of web urls
    * @return list of urls crawled
    */
   @Override
+  @SSLResolver(urlPath = "[0]")
   public List<String> webCrawl(List<String> webUrls) {
-    Map<String, List<X509Certificate>> certificates = CertificateUtils.getCertificate(webUrls);
-    List<Certificate> certs =
-        certificates.values().stream().flatMap(List::stream).collect(Collectors.toList());
-    SSLFactory sslFactory = SSLFactory.builder().withTrustMaterial(certs).build();
-    HttpsURLConnection.setDefaultSSLSocketFactory(sslFactory.getSslSocketFactory());
     List<WebCrawlDetails> finalCrawlDetails =
         webUrls.stream()
             .map(
