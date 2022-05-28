@@ -1,0 +1,58 @@
+{
+	"info": {
+		"_postman_id": "26f1fb9a-0741-4889-ba43-6132964f0105",
+		"name": "Web-Crawl",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Fetch Crawl Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{crawlUrl}}/webcrawl?anySearchText=e3tr",
+					"host": [
+						"{{crawlUrl}}"
+					],
+					"path": [
+						"webcrawl"
+					],
+					"query": [
+						{
+							"key": "anySearchText",
+							"value": "e3tr"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crawl Web Urls",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"webUrls\": [\r\n        \"https://www.javainuse.com/\",\r\n        \"https://www.dbs.com\"\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{crawlUrl}}/webcrawl",
+					"host": [
+						"{{crawlUrl}}"
+					],
+					"path": [
+						"webcrawl"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

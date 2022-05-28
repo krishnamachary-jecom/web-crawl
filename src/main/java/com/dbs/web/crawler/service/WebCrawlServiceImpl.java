@@ -6,12 +6,9 @@ import com.dbs.web.crawler.vo.SSLResolver;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.altindag.ssl.SSLFactory;
-import nl.altindag.ssl.util.CertificateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.common.SolrDocument;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,9 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,8 +30,9 @@ public class WebCrawlServiceImpl implements WebCrawlService {
   private final WebCrawlRepository webCrawlRepository;
 
   /**
-   * Method crawl from world wide web and associated internal and external urls
-   * SSLResolver to be provided the url path to load urls
+   * Method crawl from world wide web and associated internal and external urls SSLResolver to be
+   * provided the url path to load urls
+   *
    * @param webUrls list of web urls
    * @return list of urls crawled
    */
@@ -88,6 +83,8 @@ public class WebCrawlServiceImpl implements WebCrawlService {
                                   WebCrawlDetails.builder()
                                       .id(UUID.randomUUID().toString())
                                       .url(link.attr("href"))
+                                      .title(doc.title())
+                                      .description(link.text())
                                       .keyword(Collections.singletonList(link.text()))
                                       .parentId(parentId)
                                       .build())
@@ -122,6 +119,13 @@ public class WebCrawlServiceImpl implements WebCrawlService {
    */
   @Override
   public Page<WebCrawlDetails> getUrls(String anySearchText, Pageable pageable) {
-    return webCrawlRepository.findByCustomQuery(anySearchText, pageable);
+    Page<WebCrawlDetails> crawlDetails =
+        webCrawlRepository.findByCustomQuery(anySearchText, pageable);
+    if (CollectionUtils.isEmpty(crawlDetails.getContent())) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          String.format("No records found with match data %s", anySearchText));
+    }
+    return crawlDetails;
   }
 }

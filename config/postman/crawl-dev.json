@@ -1,0 +1,14 @@
+{
+  "id": "fe397b99-8cc8-445d-b21f-22aa983d1c0a",
+  "name": "Web-Crawl-Dev",
+  "values": [
+    {
+      "key": "crawlUrl",
+      "value": "http://localhost:7457",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2022-05-27T19:26:31.605Z",
+  "_postman_exported_using": "Postman/7.33.0"
+}
