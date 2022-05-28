@@ -4,7 +4,7 @@
   "values": [
     {
       "key": "crawlUrl",
-      "value": "http://localhost:7457",
+      "value": "http://18.220.197.217:7457",
       "enabled": true
     }
   ],
